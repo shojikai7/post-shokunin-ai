@@ -297,20 +297,111 @@ Post Shokunin AI プロジェクトの開発作業履歴を記録します。
 
 ---
 
+## 2025-01-05 環境構築・デプロイ準備
+
+### GitHub リポジトリ作成
+
+#### 実施内容
+- GitHub CLI でリポジトリ作成・プッシュ
+- **リポジトリURL**: https://github.com/shojikai7/post-shokunin-ai
+- **公開設定**: Public
+- **ブランチ**: main
+
+#### Git 設定
+```bash
+git config user.name "shojikai7"
+git config user.email "shojikai@gmail.com"
+```
+
+#### コミット内容
+- 86ファイル、12,220行追加
+- 初期MVP実装一式
+
+---
+
+### Supabase 環境構築
+
+#### プロジェクト作成
+- **Project URL**: `https://fubowiyrrsffxgsrxjwt.supabase.co`
+- **Region**: Northeast Asia (Tokyo)
+
+#### 環境変数設定
+- `.env.local` ファイル作成
+- 以下の環境変数を設定:
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+  - `SUPABASE_SERVICE_ROLE_KEY`
+  - `NEXT_PUBLIC_APP_URL`
+
+#### DBマイグレーション実行
+```bash
+supabase link --project-ref fubowiyrrsffxgsrxjwt
+supabase db reset --linked
+```
+
+#### マイグレーション修正
+- `uuid_generate_v4()` → `gen_random_uuid()` に変更
+  - Supabase では `uuid-ossp` 拡張が使えないため
+- 10テーブル + RLS + トリガー作成完了
+
+---
+
+### ローカル開発サーバー起動
+
+#### 起動確認
+```bash
+npm run dev
+```
+- **URL**: http://localhost:3000
+- **環境変数**: `.env.local` 読み込み確認 ✅
+
+#### node_modules 再インストール
+- パーミッションエラー発生のため再インストール実施
+```bash
+rm -rf node_modules .next
+npm install
+```
+
+---
+
+### UIバグ修正
+
+#### 「デモを見る」ボタン
+- **問題**: テキストが見えない
+- **原因**: shadcn/ui の outline バリアントが `bg-background` を適用
+- **修正**: カスタムスタイルに変更
+```tsx
+// Before
+<Button variant="outline" className="...">
+
+// After
+<button className="h-14 px-8 text-lg font-medium rounded-md border border-white/20 bg-transparent text-white hover:bg-white/10 transition-colors">
+```
+
+---
+
 ## 現在のプロジェクト状態
 
 - **ビルド**: ✅ 成功
 - **リンター**: ✅ エラーなし
 - **型チェック**: ✅ パス
+- **GitHub**: ✅ プッシュ済み
+- **Supabase**: ✅ 接続済み・マイグレーション完了
+- **ローカル動作**: ✅ 確認済み
 
 ### 起動方法
 ```bash
 npm run dev
 ```
 
-### 必要な設定
-1. Supabaseプロジェクト作成
-2. 環境変数設定（.env.local）
-3. DBマイグレーション実行
-4. Gemini APIキー取得
+### 設定済み
+- ✅ Supabaseプロジェクト作成
+- ✅ 環境変数設定（.env.local）
+- ✅ DBマイグレーション実行
+
+### 未設定
+- ❌ Gemini APIキー
+- ❌ Google OAuth (Supabase)
+- ❌ LINE Login チャネル
+- ❌ SNS連携（X/Instagram/GBP）
 

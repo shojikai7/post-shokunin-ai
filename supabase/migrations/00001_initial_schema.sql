@@ -2,9 +2,8 @@
 -- Post Shokunin AI - Initial Schema
 -- ========================================
 
--- Enable required extensions
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+-- pgcrypto is already enabled in Supabase by default
+-- gen_random_uuid() is available
 
 -- ========================================
 -- Enums
@@ -23,7 +22,7 @@ CREATE TYPE gbp_post_type AS ENUM ('STANDARD', 'EVENT', 'OFFER');
 -- ========================================
 
 CREATE TABLE profiles (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     brand_name TEXT NOT NULL,
     description_short TEXT NOT NULL DEFAULT '',
@@ -53,7 +52,7 @@ CREATE INDEX idx_profiles_user_id ON profiles(user_id);
 -- ========================================
 
 CREATE TABLE brand_assets (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     profile_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
     type asset_type NOT NULL,
     storage_path TEXT NOT NULL,
@@ -68,7 +67,7 @@ CREATE INDEX idx_brand_assets_profile_id ON brand_assets(profile_id);
 -- ========================================
 
 CREATE TABLE drafts (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     profile_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
     input_text TEXT NOT NULL,
     event_info JSONB,
@@ -87,7 +86,7 @@ CREATE INDEX idx_drafts_is_saved ON drafts(is_saved);
 -- ========================================
 
 CREATE TABLE channel_variants (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     draft_id UUID NOT NULL REFERENCES drafts(id) ON DELETE CASCADE,
     channel channel_type NOT NULL,
     post_text TEXT NOT NULL DEFAULT '',
@@ -107,7 +106,7 @@ CREATE INDEX idx_channel_variants_draft_id ON channel_variants(draft_id);
 -- ========================================
 
 CREATE TABLE generation_jobs (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     variant_id UUID NOT NULL REFERENCES channel_variants(id) ON DELETE CASCADE,
     type job_type NOT NULL,
     status job_status NOT NULL DEFAULT 'queued',
@@ -126,7 +125,7 @@ CREATE INDEX idx_generation_jobs_status ON generation_jobs(status);
 -- ========================================
 
 CREATE TABLE output_assets (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     variant_id UUID NOT NULL REFERENCES channel_variants(id) ON DELETE CASCADE,
     kind job_type NOT NULL,
     width INTEGER NOT NULL,
@@ -145,7 +144,7 @@ CREATE INDEX idx_output_assets_variant_id ON output_assets(variant_id);
 -- ========================================
 
 CREATE TABLE publish_connections (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     provider publish_provider NOT NULL,
     encrypted_tokens TEXT NOT NULL,
@@ -165,7 +164,7 @@ CREATE INDEX idx_publish_connections_user_id ON publish_connections(user_id);
 -- ========================================
 
 CREATE TABLE publish_attempts (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     variant_id UUID NOT NULL REFERENCES channel_variants(id) ON DELETE CASCADE,
     provider publish_provider NOT NULL,
     status publish_status NOT NULL DEFAULT 'pending',
@@ -183,7 +182,7 @@ CREATE INDEX idx_publish_attempts_variant_id ON publish_attempts(variant_id);
 -- ========================================
 
 CREATE TABLE audit_logs (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     action TEXT NOT NULL,
     details JSONB NOT NULL DEFAULT '{}',
@@ -199,7 +198,7 @@ CREATE INDEX idx_audit_logs_created_at ON audit_logs(created_at);
 -- ========================================
 
 CREATE TABLE usage_records (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     month TEXT NOT NULL, -- Format: YYYY-MM
     generation_count INTEGER NOT NULL DEFAULT 0,
