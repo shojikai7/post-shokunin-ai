@@ -1,3 +1,10 @@
 {
-  "extends": ["next/core-web-vitals", "next/typescript"]
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "ignorePatterns": ["worker/**/*"],
+  "rules": {
+    "jsx-a11y/alt-text": ["warn", {
+      "elements": ["img"],
+      "img": ["Image"]
+    }]
+  }
 }
